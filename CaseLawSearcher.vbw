@@ -1,0 +1,12 @@
+frmMain = 112, 148, 1075, 543, C, 65, 78, 1028, 512, C
+modSysTray = 81, 90, 1044, 485, C
+modOpenCases = 125, 142, 1088, 537, C
+frmBatch = 121, 39, 1084, 434, C, 114, 72, 1077, 523, C
+frmAbout = 0, 0, 963, 395, C, 162, 180, 1125, 575, C
+frmPopupCaselaw = 180, 175, 1143, 570, C, 162, 180, 1125, 575, C
+modDataTypes = 81, 90, 1044, 485, C
+modRevisionHistory = 162, 180, 1125, 575, C
+modGlobals = 81, 90, 1044, 485, C
+CConfigFile = 108, 120, 1071, 515, C
+modLiveUpdate = 50, 101, 1021, 496, C
+frmKeywordSearchHelp = 0, 0, 971, 395, C, 76, 100, 1047, 495, C
