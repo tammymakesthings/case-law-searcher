@@ -1,4 +1,14 @@
 Attribute VB_Name = "modRevisionHistory"
+'**********************************************************************
+'* REVISION HISTORY
+'**********************************************************************
+'
+' 1.0.0030  2008/12/14      Added application splash screen prior to app minimize to system tray
+' 1.0.0029  2008/12/14      Added "force sources update" to preferences dialog
+' 1.0.0028  2008/12/14      Added law.com law dictionary support
+' 1.0.0027  2008/12/14      Fixed a configuration file parsing bug introduced in 1.0.0026 revision
+' 1.0.0026  2008/12/13      Added "confirm quit" to the prefs dialog
+' 1.0.0025  2008/12/13      Added preferences dialog for suppressing Live Updates
 ' 1.0.0024  2008/12/13      Added keyword search help
 ' 1.0.0024  2008/12/13      Added search by keyword and party name.
 ' 1.0.0023  2008/12/13      Fixed multi-instance check to kill the new instance without

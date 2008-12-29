@@ -257,7 +257,7 @@ End Sub
 Private Sub Form_Load()
     Dim varFoo As Variant
     Dim varIter As Variant
-    varFoo = modGlobals.gAppConfig.GetSourceList
+    varFoo = modGlobals.gSourcesList.GetSourceList
     cboReporter.Clear
     For Each varIter In varFoo
         cboReporter.AddItem varIter

@@ -2,23 +2,83 @@ VERSION 5.00
 Begin VB.Form frmMain 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Case Law Searcher"
-   ClientHeight    =   3228
+   ClientHeight    =   4404
    ClientLeft      =   120
-   ClientTop       =   744
-   ClientWidth     =   6552
+   ClientTop       =   804
+   ClientWidth     =   6732
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
-   ScaleHeight     =   3228
-   ScaleWidth      =   6552
+   ScaleHeight     =   4404
+   ScaleWidth      =   6732
    ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
    WindowState     =   1  'Minimized
+   Begin VB.Frame Frame2 
+      Caption         =   "Other Searches"
+      Height          =   972
+      Left            =   120
+      TabIndex        =   16
+      Top             =   3000
+      Width           =   6492
+      Begin VB.CommandButton cmdLawDictionary 
+         Caption         =   "Define"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   12
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   372
+         Left            =   5520
+         TabIndex        =   19
+         Top             =   360
+         Width           =   852
+      End
+      Begin VB.TextBox txtDefineWord 
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   12
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   372
+         Left            =   2040
+         TabIndex        =   18
+         Top             =   360
+         Width           =   3372
+      End
+      Begin VB.Label Label5 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Define legal term:"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   12
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   372
+         Left            =   120
+         TabIndex        =   17
+         Top             =   360
+         Width           =   1812
+      End
+   End
    Begin VB.Frame Frame1 
+      Caption         =   "Case Law Search"
       Height          =   2772
-      Left            =   0
+      Left            =   120
       TabIndex        =   6
-      Top             =   0
+      Top             =   120
       Width           =   6492
       Begin VB.CommandButton Command5 
          Caption         =   "Help"
@@ -269,24 +329,13 @@ Begin VB.Form frmMain
          Strikethrough   =   0   'False
       EndProperty
       Height          =   252
-      Left            =   0
+      Left            =   120
       TabIndex        =   5
-      Top             =   2880
+      Top             =   4080
       Width           =   6492
    End
    Begin VB.Menu mnuFile 
       Caption         =   "&File"
-      Begin VB.Menu mitGo 
-         Caption         =   "&Go"
-         Shortcut        =   ^G
-      End
-      Begin VB.Menu mitShepardize 
-         Caption         =   "&Shepardize(ish)"
-         Shortcut        =   ^S
-      End
-      Begin VB.Menu mitFileSep 
-         Caption         =   "-"
-      End
       Begin VB.Menu mitExit 
          Caption         =   "E&xit..."
          Shortcut        =   ^X
@@ -297,6 +346,12 @@ Begin VB.Form frmMain
       Begin VB.Menu mitBatchMode 
          Caption         =   "&Batch Mode"
          Shortcut        =   ^B
+      End
+      Begin VB.Menu mitUtilsSep1 
+         Caption         =   "-"
+      End
+      Begin VB.Menu mitLiveUpdatePrefs 
+         Caption         =   "Preferences..."
       End
    End
    Begin VB.Menu mnuHelp 
@@ -331,6 +386,9 @@ Begin VB.Form frmMain
       Begin VB.Menu mitPopUpBatchMode 
          Caption         =   "&Batch Mode..."
       End
+      Begin VB.Menu mitDefineLegalTerm 
+         Caption         =   "&Define Legal Term..."
+      End
       Begin VB.Menu mitSysTraySep3 
          Caption         =   "-"
       End
@@ -363,6 +421,10 @@ Option Explicit
 Dim intExitCount As Integer
 Dim blnExplicitClose As Boolean
 
+Private Sub cmdLawDictionary_Click()
+    modOpenCases.LawDictionary txtDefineWord.Text
+End Sub
+
 Private Sub Command1_Click()
         MaybeDoSearch
 End Sub
@@ -370,8 +432,12 @@ End Sub
 Private Sub Command2_Click()
     intExitCount = intExitCount + 1
     If intExitCount > 1 Then Exit Sub
-    
-    If MsgBox("Are you sure you want to quit?", vbYesNo + vbDefaultButton2 + vbQuestion + vbApplicationModal, "Exit Case Law Searcher?") = vbYes Then
+    If gblnConfirmQuit = True Then
+        If MsgBox("Are you sure you want to quit?", vbYesNo + vbDefaultButton2 + vbQuestion + vbApplicationModal, "Exit Case Law Searcher?") = vbYes Then
+            Unload Me
+            End
+        End If
+    Else
         Unload Me
         End
     End If
@@ -390,29 +456,11 @@ Private Sub Command5_Click()
 End Sub
 
 Private Sub Form_Load()
-    Dim strMsg As String
     intExitCount = 0
-    
-    blnExplicitClose = False
-    If App.PrevInstance = True Then
-        strMsg = "Another instance of " & App.ProductName & " is already running." & vbCrLf & vbCrLf & _
-            "You can only run one instance at a time." & vbCrLf & _
-            "Please click on the icon in the system tray to access " & App.ProductName
-        MsgBox strMsg, vbOKOnly + vbExclamation + vbSystemModal, "Previous Instance Detected"
-        blnExplicitClose = True
-        Unload Me
-        End
-    End If
-    
-    ' Run Live Update
-    modLiveUpdate.FetchLatestSourcesList
-    
-    ' Load the configuration file
-    Set modGlobals.gAppConfig = New CConfigFile
     
     Dim varFoo As Variant
     Dim varIter As Variant
-    varFoo = modGlobals.gAppConfig.GetSourceList
+    varFoo = modGlobals.gSourcesList.GetSourceList
     cboReporter.Clear
     For Each varIter In varFoo
         cboReporter.AddItem varIter
@@ -421,7 +469,7 @@ Private Sub Form_Load()
     'txtSeries.SetFocus
     
     Dim strFoo As String
-    strFoo = "Case law searcher #m.#n.#r, Copyright (c) 2008, Tammy Cravit. All rights reserved."
+    strFoo = "Case law searcher #m.#n.#r, Copyright (c) 2008, Tammy Cravit."
     strFoo = Replace(strFoo, "#m", App.Major)
     strFoo = Replace(strFoo, "#n", App.Minor)
     strFoo = Replace(strFoo, "#r", App.Revision)
@@ -470,24 +518,11 @@ End Sub
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     intExitCount = intExitCount + 1
-    If intExitCount = 1 And blnExplicitClose = False Then
+    If intExitCount = 1 And blnExplicitClose = False And gblnConfirmQuit = True Then
         If MsgBox("Are you sure you want to quit?", vbYesNo + vbDefaultButton2 + vbQuestion + vbApplicationModal, "Exit Case Law Searcher?") = vbNo Then
             Cancel = 1
         End If
     End If
-End Sub
-
-Private Sub Label1_Click()
-    Dim strMsg As String
-    
-    strMsg = "If you use and like this application," & vbCrLf & _
-            "please drop me a note at" & vbCrLf & _
-            "tammy@tammycravit.com." & vbCrLf & _
-            "" & vbCrLf & _
-            "This application is ""Donation-Ware"". If" & vbCrLf & _
-            "you use and like it, please consider" & vbCrLf & _
-            "making a donation to http://www.clcla.org/" & vbCrLf
-    MsgBox strMsg, vbOKOnly + vbApplicationModal + vbDefaultButton1 + vbInformation, "About Case Law Searcher..."
 End Sub
 
 
@@ -497,6 +532,16 @@ End Sub
 
 Private Sub mitBatchMode_Click()
     frmBatch.Show 1, Me
+End Sub
+
+Private Sub mitDefineLegalTerm_Click()
+    Dim strKeyword As String
+    strKeyword = InputBox("Enter the term you'd like to define:", "Define Legal Term", "")
+    If Len(Trim(strKeyword)) = 0 Then
+        MsgBox "No input provided. Search cancelled."
+        Exit Sub
+    End If
+    modOpenCases.LawDictionary strKeyword
 End Sub
 
 Private Sub mitExit_Click()
@@ -509,6 +554,10 @@ End Sub
 
 Private Sub mitHelpSearchKeyword_Click()
     frmKeywordSearchHelp.Show
+End Sub
+
+Private Sub mitLiveUpdatePrefs_Click()
+    frmPreferences.Show 1, Me
 End Sub
 
 Private Sub mitPopupAbout_Click()
@@ -647,4 +696,7 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
    Private Sub Form_Unload(Cancel As Integer)
     'this removes the icon from the system tray
     Shell_NotifyIcon NIM_DELETE, nid
+    
+    ' Force the config file to be written out to disk
+    Set gAppConfig = Nothing
    End Sub

@@ -13,20 +13,36 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Private mdictConfig As Scripting.Dictionary
 
+Private Sub WriteConfigFile()
+    Dim objFSO As Scripting.FileSystemObject
+    Dim objTS As Scripting.TextStream
+    Dim varKey As Variant
+    
+    Set objFSO = New Scripting.FileSystemObject
+    Set objTS = objFSO.OpenTextFile(App.Path & "\cls.cfg", ForWriting, True)
+    For Each varKey In mdictConfig.Keys
+        objTS.WriteLine varKey & ": " & mdictConfig(varKey)
+    Next varKey
+    objTS.Close
+    Set objTS = Nothing
+    Set objFSO = Nothing
+End Sub
+
 Private Sub ReadConfigFile()
     Dim objFSO As Scripting.FileSystemObject
     Dim objTS As Scripting.TextStream
     Dim strLine As String
     Dim varFields As Variant
+    Dim strKey As String
     
     Set objFSO = New Scripting.FileSystemObject
-    Set objTS = objFSO.OpenTextFile(App.Path & "\Sources.cfg", ForReading)
+    Set objTS = objFSO.OpenTextFile(App.Path & "\cls.cfg", ForReading)
     
     Do Until objTS.AtEndOfStream
         strLine = objTS.ReadLine
-        If InStr(1, strLine, "|") > 0 Then
-            varFields = Split(strLine, "|", 2)
-            mdictConfig.Add varFields(0), varFields(1)
+        If InStr(1, strLine, ":") > 0 Then
+            varFields = Split(strLine, ":", 2)
+            mdictConfig.Add Trim(varFields(0)), Trim(varFields(1))
         End If
     Loop
     objTS.Close
@@ -34,32 +50,17 @@ Private Sub ReadConfigFile()
     Set objFSO = Nothing
 End Sub
 
-Public Function GetSourceList() As Variant
-    Dim varIter As Variant
-    Dim avarKeys() As Variant
-    Dim blnRedimmed As Boolean
-    
-    blnRedimmed = False
-    For Each varIter In mdictConfig.Keys
-        If blnRedimmed = False Then
-            ReDim avarKeys(0 To 0) As Variant
-            blnRedimmed = True
-        Else
-            ReDim Preserve avarKeys(LBound(avarKeys) To UBound(avarKeys) + 1) As Variant
-        End If
-        avarKeys(UBound(avarKeys)) = varIter
-    Next varIter
-    GetSourceList = avarKeys
-    
-End Function
-
-Public Function GetSourceURL(ByVal strSourceName As String) As String
-    If mdictConfig.Exists(strSourceName) = True Then
-        GetSourceURL = mdictConfig.Item(strSourceName)
+Public Function GetConfigValue(ByVal strKey As String) As String
+    If mdictConfig.Exists(strKey) = True Then
+        GetConfigValue = CStr(mdictConfig(strKey))
     Else
-        GetSourceURL = ""
+        GetConfigValue = ""
     End If
 End Function
+
+Public Sub SetConfigValue(ByVal strKey As String, ByVal strValue As String)
+    mdictConfig(strKey) = strValue
+End Sub
 
 Private Sub Class_Initialize()
     Set mdictConfig = New Scripting.Dictionary
@@ -67,5 +68,7 @@ Private Sub Class_Initialize()
 End Sub
 
 Private Sub Class_Terminate()
+    WriteConfigFile
     Set mdictConfig = Nothing
 End Sub
+

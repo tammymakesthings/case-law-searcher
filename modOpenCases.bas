@@ -5,6 +5,14 @@ Public Sub SearchKeywordHelp()
     LaunchUrl "http://www.findlaw.com/info/helpers/searchhelp.html"
 End Sub
 
+Public Sub LawDictionary(ByVal aWord As String)
+    Dim strURL As String
+    
+    strURL = "http://dictionary.law.com/default2.asp?typed=#w&type=1&submit1.x=0&submit1.y=0&submit1=Look+up"
+    strURL = Replace(strURL, "#w", URLEncode(aWord))
+    LaunchUrl strURL
+End Sub
+
 Public Sub SearchByKeyword(ByVal strKeyword As String)
     Dim strURL As String
     
@@ -42,7 +50,7 @@ Public Sub OpenCase(ByVal strSeries As String, ByVal strReporter As String, ByVa
 End Sub
 
 Private Function GetBaseURL(strSelectedReporter As String) As String
-    GetBaseURL = modGlobals.gAppConfig.GetSourceURL(strSelectedReporter)
+    GetBaseURL = modGlobals.gSourcesList.GetSourceURL(strSelectedReporter)
 End Function
 
 Public Function URLEncode(ByVal aString As String) As String

@@ -9,6 +9,11 @@ Public Sub FetchLatestSourcesList()
     Dim objTS As Scripting.TextStream
     Dim strLine As String
     Dim avarLineParts As Variant
+    Dim blnSuppressUpdate As Boolean
+    
+    On Error GoTo err_flsl
+    blnSuppressUpdate = False
+    gblnConfirmQuit = True
     
     Set objFSO = New Scripting.FileSystemObject
     strResult = ""
@@ -16,45 +21,47 @@ Public Sub FetchLatestSourcesList()
     ' Defaults for Live Update
     mstrLiveUpdateHost = "www.tammycravit.us"
     mstrLiveUpdatePath = "/caselawsrch/Sources.txt"
-    If objFSO.FileExists(App.Path & "\lu.cfg") Then
-        Set objTS = objFSO.OpenTextFile(App.Path & "\lu.cfg", ForReading, False)
-        Do Until objTS.AtEndOfStream
-            strLine = Trim(objTS.ReadLine)
-            avarLineParts = Split(strLine, ":", 2)
-            If LCase(Trim(avarLineParts(0))) = "host" Then
-                mstrLiveUpdateHost = Trim(avarLineParts(1))
-            ElseIf LCase(Trim(avarLineParts(0))) = "path" Then
-                mstrLiveUpdatePath = Trim(avarLineParts(1))
+    
+    If Len(gAppConfig.GetConfigValue("liveupdate.host")) > 0 Then
+        mstrLiveUpdateHost = gAppConfig.GetConfigValue("liveupdate.host")
+    End If
+    If Len(gAppConfig.GetConfigValue("liveupdate.path")) > 0 Then
+        mstrLiveUpdatePath = gAppConfig.GetConfigValue("liveupdate.path")
+    End If
+    If gAppConfig.GetConfigValue("liveupdate.enabled") <> "yes" Then
+        blnSuppressUpdate = True
+    End If
+    
+    If blnSuppressUpdate = False Then
+        Set objHTTP = New MabryHttpClient.HttpXCom
+        With objHTTP
+            .LicenseKey = "ENTER MABRY INTERNET CLIENT PACK SERIAL HERE"
+            .Host = mstrLiveUpdateHost
+            .BlockingMode = HttpXTrueBlocking
+            .Connect
+            .Get mstrLiveUpdatePath
+            
+            If .Response.Status = "HTTP/1.1 200 OK" Then
+                strResult = .Response.Body
             End If
-        Loop
-        objTS.Close
-        Set objTS = Nothing
-    End If
-    
-    Set objHTTP = New MabryHttpClient.HttpXCom
-    With objHTTP
-        .LicenseKey = "XXXXXXXX" ' License key removed for anti-piracy
-								 ' You'll need your own key to compile this.
-        .Host = mstrLiveUpdateHost
-        .BlockingMode = HttpXTrueBlocking
-        .Connect
-        .Get mstrLiveUpdatePath
+            .Disconnect
+        End With
         
-        If .Response.Status = "HTTP/1.1 200 OK" Then
-            strResult = .Response.Body
+        If Len(strResult) > 0 Then
+            
+            Set objTS = objFSO.OpenTextFile(App.Path & "\Sources.cfg", ForWriting, True)
+            objTS.WriteLine (strResult)
+            objTS.Close
+            Set objTS = Nothing
+            Set objFSO = Nothing
         End If
-        .Disconnect
-    End With
-    
-    If Len(strResult) > 0 Then
-        
-        Set objTS = objFSO.OpenTextFile(App.Path & "\Sources.cfg", ForWriting, True)
-        objTS.WriteLine (strResult)
-        objTS.Close
-        Set objTS = Nothing
-        Set objFSO = Nothing
     End If
     
+exit_flsl:
     Set objHTTP = Nothing
     Set objFSO = New Scripting.FileSystemObject
+    Exit Sub
+    
+err_flsl:
+    Resume exit_flsl
 End Sub
